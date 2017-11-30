@@ -1,0 +1,50 @@
+This is a modification of Stelian Pop's modification to my original J1850 code.  He added the powerdown stuff and also transmit capability.  I removed the transmit stuff but added GPS merge, PPS sync millisecond timestamps, and transparent GPS (to send agps or configuration to Skytraq by making the system transparent).  Also if bluetooth is connected, don't powerdown.
+
+It produces an output with millisecond (000-999) timestamps on the preceeding line of the $ in the NMEA sentence, or the SOF of the J1850.  J1850 messages are shown as Jxxxxxx... where xx are hex digits through the CRC.  An equals sign marks the PPS (the timestame should be very close to 000).  The PPS can tune the divisor for the 1mS OCB interrupt.
+
+The pins on the ATtiny4313 are (PDIP/SOIC)
+
+1 Reset (nc/ISP/dW)
+2 RXD - from Sparkfun SkyTraq GPS TX
+3 TXD - to bluetooth RxD
+4 XTAL1 - to 12Mhz resonator or crystal
+5 XTAL2 - to 12Mhz resonator or crystal
+6 INT0 PD2 - not used
+7 INT1 PD3 - to PPS on Skytraq GPS
+8 PD4 - from Bluetooth "connected" (LED) - high when connected, prevents powerdown, pulses when searching.
+9 PD5
+10 GND - to ground
+
+20 VCC - to 3.3v
+19 PB7 nc SCK for ISP
+18 PB6 nc MISO for ISP
+17 PB5 nc MOSI for ISP
+16 PB4 nc
+15 PB3 nc
+14 PB2 nc
+13 PB1 - to FET to control power to VCC on the bluetooth and GPS, high means on.
+12 PB0 nc
+11 ICP1 PD6 - to J1850 line through a 4.7k to 10k resistor.
+
+The Bluetooth TxD goes to the GPS RxD.
+
+The ATtiny4313 will go to a deep sleep, so 3.3v regulated can go to it and VBatt of the GPS.
+
+A second power supply goes to the Bluetooth and GPS Vcc via a FET or other switch controlled by PB1.
+
+The bluetooth module is the common HC04/06 "slave" found on many sites.  Pin 1 is TxD, 2 is RxD, 12 is Vcc, 13 (and 22) are Ground, and 24 is the LED for connect.  26 is a "key" (switch), but I leave it unconnected.
+
+The GPS is the Venus 628 Breakout from Sparkfun.  It uses Vcc, Txd, Rxd, Ground, 1PPS, and optionally Vbatt.
+
+
+Here is a (no-J1850) exerpt from the output.  J1850 hasn't been tested yet.
+
+015
+$GPGGA,235943.986,4228.7184,N,08314.4991,W,1,05,2.0,256.0,M,-34.2,M,,0000*60
+999
+=
+028
+$GPRMC,235943.986,A,4228.7184,N,08314.4991,W,001.6,146.5,250312,,,A*7A
+
+(FIXED) The interleaving used to cause the statements to appear out of order, and required NMEA to push data
+
